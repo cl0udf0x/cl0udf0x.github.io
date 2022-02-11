@@ -101,3 +101,87 @@ data.aws_instance.my-vm
 - The state file may contain sensitive data so don't let it fall into the wrong hands! 
 
 ## Variables and Output
+
+Example:
+```
+# variable - keyword 
+# var_name - arbitrary user provided name
+# args     - inside curly braces
+
+variable "var_name" {
+    description
+    type
+    default
+}
+```
+
+Its also possible to declare a variable as follows, but values would have to passed via OS ENV var or cmd line input.
+
+```
+variable "var_name" = {}
+```
+
+To reference a variable:
+```
+var.my-var
+```
+
+Its best practice to gather variables in the `terraform.tfvars` file.
+
+### Variable validation
+
+```
+variable "var_name" {
+    description
+    type
+    default
+    validation {
+        condition = length(var.my-var) > 4
+        error_message = "the string must be 4 chars"
+    }
+}
+```
+
+Use a config parameter called sensitive to prevent vars to be hidden.
+```
+variable "var_name" {
+    description
+    type
+    sensitive = true
+}
+```
+
+### Base types
+
+- string
+- number
+- bool
+
+### Complex types
+
+- list, set, map, object, tuple
+
+Which [variables are given what precedence](https://www.terraform.io/language/values/variables#variable-definition-precedence)?
+
+### Output values
+
+```
+# output      - keyword
+# instance_ip - arbitrary user provided name
+# args        - inside curly braces
+
+output "instance_ip"{
+    description = "Instance IP"
+    value = aws_instance.my-vm.private_ip 
+}
+```
+- Output variables are shown on the shell after running terraform apply.
+- Output variables are like return values that you want to track after a successful Terraform deployment.
+
+## Terraform Provisioners 
+- The Terraform way of bootstrapping custom scripts against resources.
+- These can be run locally or remotely on resources spun up through Terraform deployment.
+- A provisioner is attached to a Terraform resource and allows custom connection parameters, which can be passed to the remote resources via SSH or WINRM and carry out arbitrary commands against that resource.
+- 2 types: Creation-Time and Destroy-Time
+- If a command within the provisioner returns non-zero, it is considered failed and the resource will be tainted. 
+- Use `self.id` when referencing from within resource.
