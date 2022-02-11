@@ -1,37 +1,72 @@
-## Welcome to GitHub Pages
+# Terraform Notes
 
-You can use the [editor on GitHub](https://github.com/cl0udf0x/cl0udf0x.github.io/edit/main/README.md) to maintain and preview the content for your website in Markdown files.
+## Work Flow
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+1. **WRITE** - Use VCS (recommended)
+2. **PLAN** - Review the changes the code will make (cycle between write and plan)
 
-### Markdown
+- Reads the code and shows a plan of execution. 
+- It makes API calls to the Cloud provider.
+- While this is effectively a RO command, it requires auth creds to connect to the Cloud provider.
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+3. **APPLY** - Provision the real infrastructure
+   
+- Deploys the instructions and statements in the code.
+- Updates the tracking mechanism file, AKA the state file (terraform.tfstate local or remote)
 
-```markdown
-Syntax highlighted code block
+4. DESTROY 
 
-# Header 1
-## Header 2
-### Header 3
+- Use with caution
+- Destroys all the resources that are being tracked by the state file.
 
-- Bulleted
-- List
+### Initialising the Terraform Work Flow
+`terraform init`
+- downloads modules and plugins (also known as providers).
+- caches modules and plugins, but will download the latest by default.
+- sets up the backed for storing the state file.
+- Its a critical command!
 
-1. Numbered
-2. List
+## Resource Addressing
 
-**Bold** and _Italic_ and `Code` text
+### **_provider block_**
 
-[Link](url) and ![Image](src)
+```
+# code fetches a provider (keyword btw), in this case AWS
+provider "aws" {
+    region ="us-east-1"
+}
 ```
 
-For more details see [Basic writing and formatting syntax](https://docs.github.com/en/github/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax).
+### **_resource block_**
+```
+# resource - keyword
+# aws_instance - derived from the provider (see above)
+# web - arbitrary user provided name
+# resource config args inside curly braces
+resource "aws_instance" "web"{
+    ami =
+    instance_type = t2.micro
+}
+```
+To reference use the resource address:
+```
+aws_instance.web
+```    
+### **_data source block_**
+Fetches/tracks data of an already created resource
+```
+# data - keyword
+# aws_instance - derived from the provider (see above)
+# my_vm - arbitrary user provided name
+data "aws_instance" "my_vm" {
+    instance_id = i-asdasdasd
+}
+```
+To reference use the resource address:
+```
+data.aws_instance.my-vm
+```
 
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/cl0udf0x/cl0udf0x.github.io/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+## Terraform code behavior
+- Terraform executes code  in files with the .tf extension.
+- by default looks in the terraform providers registry - registry.terraform.io but this can also be sourced locally/internally, and you can even write your own. 
