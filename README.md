@@ -185,3 +185,48 @@ output "instance_ip"{
 - 2 types: Creation-Time and Destroy-Time
 - If a command within the provisioner returns non-zero, it is considered failed and the resource will be tainted. 
 - Use `self.id` when referencing from within resource.
+
+## Terraform State in-depth
+- Maps real-world resources to Terraform configuration
+- By default its stored locally in a file called `terraform.tfstate`.
+- Prior to any modification operation, Terraform refreshes the state file.
+- Resource dependency metadata is also tracked via the state file.
+- Helps boost deployment performance by caching attribute resources for subsequent use.
+
+### Terraform state file command
+
+Terraform command utility for manipulating and retrieving the state file
+- advanced state management
+- manually remove a resource from state file so its not managed by terraform.
+- Listing out tracked resources and their details (via state and list commands)
+  
+```
+terraform state list # List all resources tracked by the Terraform state file
+terraform state rm   # Delete a resource from the Terraform state file
+terraform state show # Show details of a resource tracked in the state file
+```
+
+### Local state storage
+- Saves state locally on your system
+- default behavior.
+- saves a backup of your last known state file after successful apply.
+
+### Remote state storage
+
+- AWS s3, google cloud, and more can be used.
+- Allows sharing state file between distributed teams.
+- Secure and highly available. 
+- Allows locking state so parallel executions don't coincide (AWS s3, Hashicorp but not supported by all vendors)
+- Enables sharing output values with other Terraform configuration or code.
+  
+Persisting state in AWS S3.
+
+```
+terraform {
+    backend = s3{
+        region = 
+        key    = 
+        bucket = 
+    }
+}
+```
