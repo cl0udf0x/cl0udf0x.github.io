@@ -14,7 +14,7 @@
 - Deploys the instructions and statements in the code.
 - Updates the tracking mechanism file, AKA the state file (terraform.tfstate local or remote)
 
-4. DESTROY 
+4. **DESTROY**
 
 - Use with caution
 - Destroys all the resources that are being tracked by the state file.
