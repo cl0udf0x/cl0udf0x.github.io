@@ -70,3 +70,34 @@ data.aws_instance.my-vm
 ## Terraform code behavior
 - Terraform executes code  in files with the .tf extension.
 - by default looks in the terraform providers registry - registry.terraform.io but this can also be sourced locally/internally, and you can even write your own. 
+
+## Installing Terraform
+
+1. Download the zip binary, unzip and place it on the system path where it can be invoked.
+2. Setup the Terraform repo for you Linux flavour and use pkg manager to install and it will be setup ready to use.
+
+
+## Terraform Providers
+
+- These abstract the integrations with API control layer of the cloud provider.
+- Every cloud/infra has its own provider.
+- By default, Terraform looks in the providers registry.
+- Providers can also be sourced locally/internally (on-prem e.g. Artifactory)
+- Providers are plugins and have their own release cycle and own version number.
+- Essentially, a provider is a predefined chunk of code that enables Terraform to interact with a given Cloud provider.
+- Its possible to write you own custom provider.
+
+- Terraform finds and installs providers when initialising the working dir (see `terraform init`).
+- Providers should be pegged to a specific version as changes to the version may break your deployment.
+- Providers are downloaded to Terraform.
+
+## Terraform State file
+
+- Resource tracking - Terraform can keeps tabs on what has been deployed.
+- Critical to Terraform functionality.  Do resources need to created, modified or destroyed?
+- The state file is a JSON dump of all the resources that have been deployed and is stored as a flat file.
+- Helps Terraform calculate deployment deltas and create new plans.
+- plan is compared to the state file to calculate delta.
+- The state file may contain sensitive data so don't let it fall into the wrong hands! 
+
+## Variables and Output
