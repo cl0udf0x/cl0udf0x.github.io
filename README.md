@@ -298,8 +298,156 @@ output ip_address {
 
 reference outside of module using `module.myvpc-module.ip_address`
 
+## Built in Functions and Dynamic blocks
 
+### Built in Functions
 
+Terraform comes pre-packaged with functions to help transform and combine values.
+
+User defined  functions are not allowed - only built in ones.
+
+General syntax is `function_name(arg1, arg2)`
+
+Built in functions are extremely useful in making Terraform code dynamic and flexible.
+
+`Join` function example, result terraform-prod
+
+```
+variable "project-name" {
+    type = string
+    default = "prod"
+}
+```
+```
+resource "aws_vpc" "my-vpc" {
+    cidr_block = "10.0.0.6/16"
+    tags {
+        Name = join("-", ["terraform", var.project-name])
+    }
+}
+```
+
+List of [Terraform functions](https://www.terraform.io/language/functions)
+
+## Using the Console to test
+
+Test functions
+
+`terraform console`
+
+`> max(1,4,6,7)`
+
+`> timestamp()`
+
+`> join("-", "me", "you"`
+
+`> contains(["one","two","three"], "one")`
+
+## Type Contraints
+
+- Type contraints control the type of variable.
+- Primitive e.g. `number`, `string`, `bool`
+- Complex e.g multiple types in a single variable e.g `list`, `tuple`, `map`, `object`
+
+### Collection
+
+- Allow multiple values of one primitive type to grouped together.
+- `constructors` include `list()`, `map()`, `set()`
+
+### Structural
+
+- Allow multiple types of different primitive types to be grouped together.
+- `constructors` include `object()`, `tuple()`, `set()`
+
+```
+variable "instructor" {
+    type = object({
+        name = string
+        age = number
+    })
+}
+```
+
+### Any
+
+- is a placeholder for a primitive type yet to be decided
+- Actual type will be determined at runtime.
+
+```
+# Terraform recognises all values as numbers in one variable.
+
+variable "data" {
+    type = list(any)
+    default = [1,2,3]
+}
+```
+
+## Dynamic blocks
+
+Dynamical constructs repeatable nested config blocks inside Terraform resources
+Supported within 
+- resource
+- data
+- provider 
+- provisioner
+
+Used to make you code look cleaner
+
+```
+resource "aws_security_group" "my-sg" {
+    name = "my-aws-security-group"
+    vpc_id = aws_vpc.my-vpc.id
+    ingress {
+        from_port   = 22
+        to_port     = 22
+        protocol    = "tcp"
+        cidr_blocks = ["1.2.3.4/32"]
+    }
+    ingress {
+        ... #more ingress rules
+    }
+}
+```
+
+VS
+```
+resource "aws_security_group" "my-sg" {
+    name = "my-aws-security-group"
+    vpc_id = aws_vpc.my-vpc.id
+    dynamic "ingress" {            # dynamic block keyword
+        for_each = var.rules       # Complex variable to iterate over
+        content {                  # "content" block defines the body of each generated block using the variable
+          from_port   = ingress.value["port"]
+          to_port     = ingress.value["port"]
+          protocol    = ingress.value["proto"]
+          cidr_blocks = ingress.value["cidrs"]
+        }
+    }
+}
+
+variable "rules" {
+    default = [
+        {
+            port = 80
+            proto = "tcp"
+            cidr_blocks = ["0.0.0.0/0"]
+
+        },
+        {
+            port = 22
+            proto = "tcp"
+            cidr_blocks = ["1.2.3.4/32"]
+
+        },
+
+    ]
+}
+```
+
+- Dynamic blocks expect a complex type to iterate over.
+- They act like for loop and outputs a nested block for each element in our variable.
+- Caution! Be careful not to overuse in main code as they can be hard to read and maintain.
+- Only use dynamic blocks when you need to hide detail in order to build a cleaner user interface when writing reusable modules.
 
 
 
