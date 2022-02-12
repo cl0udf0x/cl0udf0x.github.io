@@ -230,3 +230,101 @@ terraform {
     }
 }
 ```
+
+## Modules
+
+### Accessing and Using
+
+- just a collection of terraform code
+- groups multiple resources that are used together
+- essentially makes code reusable 
+- Every Terraform configuration has at least one module, called the `root` module, which consists of code files in your main working directory
+- When you use modules within the root module these are known as child modules.
+
+Modules can be downloaded from:
+- Terraform Public registry
+- A private registry
+- Your local system
+
+```
+module "my-vpc-module" {
+    source = "./modules/vpc"
+    version = "0.0.5"
+    region = var.region
+}
+```
+Always use a specific version of a module
+
+Other allowed parameters
+- count
+- for_each
+- providers
+- depends_on
+
+Can optionally take input and provide outputs to plug back to your main code.
+
+### Accessing module outputs in your code
+
+```
+resource aws_instance "my_vpc_module" {
+    # other args
+    subnet_id = "module.my-vpc-module.subnet_id"
+}
+```
+
+### Interacting with module inputs and outputs
+
+Module inputs are arbitrarily named parameters that pass inside the module block.
+These inputs can used as variables inside the module code.
+
+module my-vpc-module {
+    source = ./modules/vpc
+    server-name = us-east-1 # input parameters for module
+}
+
+reference inside module as var.server-name
+
+Outputs declared inside the Terraform module code can be fed back into the root module or your main code.
+
+Example
+
+module.<name of module>.<name-of-output>
+
+```
+output ip_address {
+    value = "aws_instance.private_ip"
+}
+```
+
+reference outside of module using `module.myvpc-module.ip_address`
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
