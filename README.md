@@ -449,12 +449,128 @@ variable "rules" {
 - Caution! Be careful not to overuse in main code as they can be hard to read and maintain.
 - Only use dynamic blocks when you need to hide detail in order to build a cleaner user interface when writing reusable modules.
 
+## Terraform CLI
+
+### `fmt`
+
+- Formats code
+- Helps keeping code consistent
+- Only modifies the look of the code
+- safe to run at anytime
+- Looks for files ending in .tf and formats
+
+When to use?
+
+- Before pushing your code to VCS
+- After upgrading Terraform or its modules
+- Anytime you have made changes to code.
+
+`terraform fmt`
+
+### `taint`
+
+- Taints an existing resource, forcing it to be destroyed and recreated.
+- Modifies the state file, which causes the recreation workflow.
+- Tainting a resource may cause other resources to be modified (dependencies)
+
+`terraform taint RESOURCE ADDRESS`
+
+When to use?
+
+- To cause provisioners to run.
+- Replace misbehaving resources forcefully.
+- To mimic side effects of recreation not modelled by any attributes of the resource. 
+
+### `import`
+
+- Maps a resource not currently in Terraform using an ID.
+- "ID" is dependent on the underlying vendor, for example to import AWS EC2 instance you'll need to provide its instance ID.
+- Importing the same resource to multiple Terraform resources can cause unknown behaviour and is not recomended.  e.g state file has 1-to-1 mappings.
+
+`terraform import RESOURCE_ADDRESS ID`
 
 
+WHen to use?
 
+- When you need to work with existing resources.
+- When you can't create new resources.
+- When you are not in control of the creation process of infrastructure.
 
+### Terraform configuration block
 
+- A special configuration block for controlling Terraforms own behaviour.
+- This block only allows constant values, named resources and variables are not allowed in it.
 
+For example:
+
+- Configuring backend for storing state files.
+- Specifing Terraform version.
+- Specifying a required Terraform Provider and its requirements.
+- Enable and test Terraform experimental features.
+- Passing metadata to providers.
+
+```
+terraform {
+    required_version = ">=0.13."
+    required_providers {
+        aws = ">=3.0.0"
+    }
+}
+```
+
+## Terraform Workspaces
+
+- Workspaces are alternate state files within the same working directory
+- distinct envs can be spun up
+- Terraform starts with the default workspace - called default.  It can't be deleted.
+
+```
+terraform workspace new <NAME>
+terraform workspace select <NAME>
+```
+
+Why use?
+
+- Test changes using a parrallel distinct copy of infrastucture
+- It can be modelled against branches in version control
+- Workspaces are mean't to share resources and` to help enable collaboration.
+- Access to a workspace name is provided through the ${terraform.workspace} variable.
+
+```
+resource "aws_instance" "example" {
+    count = terraform,workspace == "default" ? 5:1
+    # ... other args
+}
+```
+
+```
+resource "aws_s3_bucket" "bucket" {
+    bucket = "mybucket-${terraform.workspace}"
+    acl = private
+    # ... other args
+}
+```
+
+`terraform workspace list`
+
+`terraform workspace new test`
+
+The default workspace state file is stored in `./terraform.tfstate` any other workspace state files are stored in `terraform.tfstate.d`
+
+## Debugging Terraform
+
+`TF_LOG` is an ENV variable for enabling verbose logging in Terraform.  By default it will send logs to stderr.
+
+Five levels TRACE, DEBUG, INFO, WARN, ERROR.
+
+TRACE is the most verbose level and the most reliable one?  
+
+TF_LOG_FILE to direct output to a file.
+
+export TF_LOG=TRACE
+export TF_LOG_FILE=./terraform.log
+
+If you are working with Hashicorp support these are the logs they would request.
 
 
 
